@@ -39,9 +39,19 @@ jobs:
           yes | sdkmanager --licenses >/dev/null
           sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;26.2.11394342"
 
+      - name: Cache native sing-box AAR
+        uses: actions/cache@v5
+        with:
+          path: app/libs/libbox.aar
+          key: libbox-${{ runner.os }}-go1.23.9-${{ hashFiles('core/sing-box/**/*.go', 'core/sing-box/go.mod', 'core/sing-box/go.sum', 'core/sing-quic/**/*.go', 'core/sing-quic/go.mod', 'core/sing-quic/go.sum') }}
+
       - name: Build sing-box libbox.aar
         shell: bash
         run: |
+          if [ -s app/libs/libbox.aar ]; then
+            echo "Using the restored sing-box AAR cache."
+            exit 0
+          fi
           set +e
           ./scripts/build-libbox-android.sh 2>&1 | tee /tmp/libbox-build.log
           result=${PIPESTATUS[0]}
@@ -62,12 +72,20 @@ jobs:
           ./gradlew --no-daemon testDebugUnitTest assembleDebug 2>&1 | tee /tmp/gradle-build.log
           result=${PIPESTATUS[0]}
           if [ "$result" -ne 0 ]; then
-            echo "::group::Last Gradle build output"
-            tail -n 80 /tmp/gradle-build.log | while IFS= read -r line; do
-              escaped=$(printf '%s' "$line" | sed -e 's/%/%25/g' -e 's/\r/%0D/g')
-              echo "::error::$escaped"
-            done
-            echo "::endgroup::"
+            RESULT="$result" python3 - <<'PY'
+          from pathlib import Path
+          import os
+          log_paths = [Path('/tmp/gradle-build.log')]
+          daemon_dir = Path.home() / '.gradle' / 'daemon'
+          if daemon_dir.exists():
+              log_paths.extend(sorted(daemon_dir.glob('**/*.out.log'), key=lambda p: p.stat().st_mtime, reverse=True)[:2])
+          chunks = [f'Gradle exit code: {os.environ.get("RESULT", "non-zero")}']
+          for path in log_paths:
+              if path.exists():
+                  chunks.append(f'--- {path} ---\n' + '\n'.join(path.read_text(errors='replace').splitlines()[-100:]))
+          text = '\n'.join(chunks).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print(f'::error title=Gradle and daemon logs::{text}')
+          PY
             exit "$result"
           fi
 
