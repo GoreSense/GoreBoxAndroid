@@ -70,7 +70,7 @@ class AmneziaWgConfigParserTest {
         S1 = 15
         S2 = 16
         H1 = 123456
-        I1 = \\x01\\x02
+        I1 = \x01\x02
         HeaderProtectionKey = AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
         ContentPaddingAddition = 20-40
         RandomTrailers = true

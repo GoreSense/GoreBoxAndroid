@@ -206,7 +206,7 @@ class GoreBoxVpnService : VpnService(), PlatformInterface {
                 throw IllegalArgumentException("Не удалось разрешить endpoint AmneziaWG $host: ${error.cause?.message}", error.cause ?: error)
             }
         }
-        val numericHost = address.hostAddress.substringBefore('%')
+        val numericHost = checkNotNull(address.hostAddress).substringBefore('%')
         val formattedHost = if (address is Inet6Address) "[$numericHost]" else numericHost
         return "$formattedHost:$port"
     }
