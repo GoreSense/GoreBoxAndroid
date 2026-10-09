@@ -99,36 +99,28 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Keep the installable APK on the work branch
+      - name: Keep a downloadable APK archive on the work branch
         if: github.ref == 'refs/heads/arena/03ebb552-goreboxandroid'
-        shell: bash
         run: |
-          set +e
           mkdir -p deliverables
-          install -m 0644 app/build/outputs/apk/debug/app-debug.apk deliverables/GoreBox-debug.apk
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile
+          apk = Path('app/build/outputs/apk/debug/app-debug.apk')
+          archive = Path('deliverables/GoreBox-debug-apk.zip')
+          with ZipFile(archive, 'w', compression=ZIP_DEFLATED, compresslevel=9) as output:
+              output.write(apk, arcname='GoreBox-debug.apk')
+          size = archive.stat().st_size
+          print(f'Compressed APK archive: {size} bytes')
+          if size >= 100_000_000:
+              raise SystemExit('Compressed APK archive exceeds GitHub\'s 100 MB file limit.')
+          PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f deliverables/GoreBox-debug.apk
+          git add deliverables/GoreBox-debug-apk.zip
           if git diff --cached --quiet; then
-            echo "The branch already contains this APK."
-            exit 0
-          fi
-          git commit -m "Add installable GoreBox debug APK" 2>&1 | tee /tmp/apk-commit.log
-          result=${PIPESTATUS[0]}
-          if [ "$result" -eq 0 ]; then
-            git push origin HEAD:refs/heads/arena/03ebb552-goreboxandroid 2>&1 | tee -a /tmp/apk-commit.log
-            result=${PIPESTATUS[0]}
-          fi
-          if [ "$result" -ne 0 ]; then
-            RESULT="$result" python3 - <<'PY'
-          from pathlib import Path
-          import os
-          text = f'APK branch push exit code: {os.environ["RESULT"]}\n'
-          path = Path('/tmp/apk-commit.log')
-          if path.exists():
-              text += path.read_text(errors='replace')[-12000:]
-          text = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
-          print(f'::error title=APK branch publish log::{text}')
-          PY
-            exit "$result"
+            echo "The branch already contains the current APK archive."
+          else
+            git commit -m "Add compressed downloadable GoreBox debug APK"
+            git push origin HEAD:refs/heads/arena/03ebb552-goreboxandroid
           fi
