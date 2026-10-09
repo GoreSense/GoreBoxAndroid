@@ -56,7 +56,20 @@ jobs:
           fi
 
       - name: Run Android unit tests and assemble APK
-        run: ./gradlew --no-daemon testDebugUnitTest assembleDebug
+        shell: bash
+        run: |
+          set +e
+          ./gradlew --no-daemon testDebugUnitTest assembleDebug 2>&1 | tee /tmp/gradle-build.log
+          result=${PIPESTATUS[0]}
+          if [ "$result" -ne 0 ]; then
+            echo "::group::Last Gradle build output"
+            tail -n 80 /tmp/gradle-build.log | while IFS= read -r line; do
+              escaped=$(printf '%s' "$line" | sed -e 's/%/%25/g' -e 's/\r/%0D/g')
+              echo "::error::$escaped"
+            done
+            echo "::endgroup::"
+            exit "$result"
+          fi
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
