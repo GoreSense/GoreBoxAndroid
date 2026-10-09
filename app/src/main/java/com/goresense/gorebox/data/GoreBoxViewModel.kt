@@ -125,12 +125,12 @@ class GoreBoxViewModel(application: Application) : AndroidViewModel(application)
         feedback = "Профиль удалён"
     }
 
-    fun setDarkTheme(enabled: Boolean) {
+    fun updateDarkTheme(enabled: Boolean) {
         darkTheme = enabled
         store.darkTheme = enabled
     }
 
-    fun setProxyMode(mode: ProxyMode) {
+    fun updateProxyMode(mode: ProxyMode) {
         proxyMode = mode
         store.selectedAppsOnly = mode == ProxyMode.SelectedApps
     }

@@ -122,7 +122,7 @@ fun GoreBoxRoot(
             .statusBarsPadding(),
     ) {
         Column(Modifier.fillMaxSize()) {
-            AppTitleBar(darkTheme = viewModel.darkTheme, onToggleTheme = { viewModel.setDarkTheme(!viewModel.darkTheme) })
+            AppTitleBar(darkTheme = viewModel.darkTheme, onToggleTheme = { viewModel.updateDarkTheme(!viewModel.darkTheme) })
             Box(Modifier.weight(1f)) {
                 when (viewModel.currentTab) {
                     AppTab.Profiles -> ProfilesPage(
@@ -613,7 +613,7 @@ private fun RoutingPage(viewModel: GoreBoxViewModel) {
         }
         Text("РЕЖИМ", color = p.textMuted, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, modifier = Modifier.padding(bottom = 8.dp))
         ProxyMode.entries.forEach { mode ->
-            ModeCard(mode = mode, selected = viewModel.proxyMode == mode, onClick = { viewModel.setProxyMode(mode) })
+            ModeCard(mode = mode, selected = viewModel.proxyMode == mode, onClick = { viewModel.updateProxyMode(mode) })
             Spacer(Modifier.height(8.dp))
         }
         if (viewModel.proxyMode == ProxyMode.SelectedApps) {
@@ -742,7 +742,7 @@ private fun SettingsPage(
                     title = "Тёмная тема Windows",
                     description = "Палитра GoreBox для Windows и Android",
                     checked = viewModel.darkTheme,
-                    onCheckedChange = viewModel::setDarkTheme,
+                    onCheckedChange = viewModel::updateDarkTheme,
                 )
             }
         }
