@@ -40,7 +40,20 @@ jobs:
           sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;26.2.11394342"
 
       - name: Build sing-box libbox.aar
-        run: ./scripts/build-libbox-android.sh
+        shell: bash
+        run: |
+          set +e
+          ./scripts/build-libbox-android.sh 2>&1 | tee /tmp/libbox-build.log
+          result=${PIPESTATUS[0]}
+          if [ "$result" -ne 0 ]; then
+            echo "::group::Last libbox build output"
+            tail -n 80 /tmp/libbox-build.log | while IFS= read -r line; do
+              escaped=$(printf '%s' "$line" | sed -e 's/%/%25/g' -e 's/\r/%0D/g')
+              echo "::error::$escaped"
+            done
+            echo "::endgroup::"
+            exit "$result"
+          fi
 
       - name: Run Android unit tests and assemble APK
         run: ./gradlew --no-daemon testDebugUnitTest assembleDebug
