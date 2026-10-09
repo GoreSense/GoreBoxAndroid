@@ -24,13 +24,6 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Go 1.23
-        uses: actions/setup-go@v7
-        with:
-          go-version: "1.23.9"
-          cache: true
-          cache-dependency-path: core/sing-box/go.sum
-
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4.0.4
 
@@ -38,6 +31,36 @@ jobs:
         run: |
           yes | sdkmanager --licenses >/dev/null
           sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;26.2.11394342"
+
+      - name: Set up Go 1.25 for AmneziaWG
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.25.0"
+          cache: true
+          cache-dependency-path: core/amneziawg-android/go.sum
+
+      - name: Build AmneziaWG Android runtime
+        shell: bash
+        run: |
+          set +e
+          ./scripts/build-amneziawg-android.sh 2>&1 | tee /tmp/amneziawg-build.log
+          result=${PIPESTATUS[0]}
+          if [ "$result" -ne 0 ]; then
+            echo "::group::Last AmneziaWG build output"
+            tail -n 100 /tmp/amneziawg-build.log | while IFS= read -r line; do
+              escaped=$(printf '%s' "$line" | sed -e 's/%/%25/g' -e 's/\r/%0D/g')
+              echo "::error::$escaped"
+            done
+            echo "::endgroup::"
+            exit "$result"
+          fi
+
+      - name: Set up Go 1.23 for sing-box
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.23.9"
+          cache: true
+          cache-dependency-path: core/sing-box/go.sum
 
       - name: Cache native sing-box AAR
         uses: actions/cache@v5

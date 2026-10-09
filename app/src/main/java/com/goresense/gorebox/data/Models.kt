@@ -104,7 +104,7 @@ object ProtocolCatalog {
 
     fun hint(id: String): String? = when (id.lowercase()) {
         "mtproto" -> "MTProto рассчитан на Telegram и не подключается как общий TUN-прокси."
-        "amneziawg" -> "AmneziaWG можно импортировать, но текущая Android-сборка sing-box его не реализует."
+        "amneziawg" -> "Для AmneziaWG запускается встроенное AmneziaWG-ядро с поддержкой параметров обфускации."
         "anytls" -> "AnyTLS можно импортировать, но он отсутствует в используемой Android-версии sing-box."
         "shadowsocksr" -> "SSR можно импортировать, но используемое sing-box-ядро его не поддерживает."
         "tunnel" -> "Пользовательский sing-box JSON передаётся в ядро; конфигу нужен валидный outbound."

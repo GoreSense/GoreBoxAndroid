@@ -21,6 +21,7 @@ class SingBoxConfigBuilderTest {
         val outbound = config.getJSONArray("outbounds").getJSONObject(0)
 
         assertEquals("tun", tun.getString("type"))
+        assertEquals("gvisor", tun.getString("stack"))
         assertEquals("org.example.mail", tun.getJSONArray("include_package").getString(0))
         assertEquals("vless", outbound.getString("type"))
         assertEquals("123e4567-e89b-12d3-a456-426614174000", outbound.getString("uuid"))
@@ -97,6 +98,7 @@ class SingBoxConfigBuilderTest {
         val config = JSONObject(SingBoxConfigBuilder.build(profile("tunnel", raw)))
 
         assertEquals("tun", config.getJSONArray("inbounds").getJSONObject(0).getString("type"))
+        assertEquals("gvisor", config.getJSONArray("inbounds").getJSONObject(0).getString("stack"))
         assertEquals("upstream", config.getJSONObject("route").getString("final"))
         assertTrue(config.getJSONObject("route").getBoolean("auto_detect_interface"))
     }

@@ -166,7 +166,9 @@ object ProfileLinkParser {
     }
 
     private fun parseWireGuardConfig(raw: String): ProxyProfile {
-        val amnezia = Regex("(?im)^\\s*(?:Jc|Jmin|Jmax|H[1-4])\\s*=").containsMatchIn(raw)
+        val amnezia = Regex(
+            "(?im)^\\s*(?:Jc|Jmin|Jmax|S[1-4]|H[1-4]|I[1-5]|HeaderProtectionKey|ContentPaddingAddition|RandomTrailers|DisableCookies)\\s*=",
+        ).containsMatchIn(raw)
         val protocol = if (amnezia) "amneziawg" else "wireguard"
         return profile(if (amnezia) "AmneziaWG" else "WireGuard", protocol, "", 0, raw)
     }

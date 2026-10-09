@@ -111,6 +111,9 @@ object SingBoxConfigBuilder {
             if (!tun.has("inet6_address")) tun.put("inet6_address", JSONArray().put("fd00:676f:7265::1/126"))
             if (selectedAppsOnly) tun.put("include_package", JSONArray(packages))
         }
+        // Android's system stack may try to bind sockets to the virtual IPv6 address and fail
+        // with EADDRNOTAVAIL. gVisor keeps the TCP/IP stack inside the process and avoids that.
+        tun.put("stack", "gvisor")
         config.put("inbounds", inbounds)
 
         val route = config.optJSONObject("route") ?: JSONObject()
@@ -140,7 +143,7 @@ object SingBoxConfigBuilder {
             .put("mtu", 1500)
             .put("auto_route", true)
             .put("strict_route", true)
-            .put("stack", "system")
+            .put("stack", "gvisor")
         if (selectedAppsOnly) tun.put("include_package", JSONArray(packages))
         return tun
     }

@@ -11,3 +11,4 @@ local.properties
 # Native Android core generated from gomobile
 app/libs/libbox.aar
 app/libs/libbox-*.aar
+app/src/main/jniLibs/

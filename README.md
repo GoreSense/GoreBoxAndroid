@@ -5,8 +5,8 @@ Android-клиент GoreBox с интерфейсом в палитре и ви
 ## Реализация
 
 - Kotlin + Jetpack Compose, локальное хранение профилей, импорт ссылок и JSON, экран маршрутов, светлая/тёмная тема.
-- sing-box `1.9.7-neko-1` собирается через gomobile для Android; исходники ядра лежат в `core/sing-box/` и `core/sing-quic/`.
-- `GoreBoxVpnService` реализует `PlatformInterface`: создаёт TUN через `VpnService.Builder`, защищает исходящие сокеты через `VpnService.protect()`, следит за сменой сети и передаёт lifecycle ядру.
+- sing-box `1.9.7-neko-1` собирается через gomobile для Android; исходники ядра лежат в `core/sing-box/` и `core/sing-quic/`. AmneziaWG запускается отдельным встроенным userspace-движком `amneziawg-go` через тот же Android `VpnService`.
+- `GoreBoxVpnService` реализует `PlatformInterface`: создаёт TUN через `VpnService.Builder`, защищает исходящие сокеты через `VpnService.protect()`, следит за сменой сети и передаёт lifecycle ядру. Для TUN используется gVisor-stack, чтобы не привязывать системные сокеты Android к виртуальному IPv6-адресу.
 - Режим выбранных приложений использует `include_package` sing-box и `Builder.addAllowedApplication()`. Сам GoreBox исключается из списка VPN-приложений, чтобы служба могла устанавливать прокси-соединения.
 - Quick Settings-плитка GoreBox: короткое нажатие переключает VPN; если ещё нет профиля или разрешения Android, открывает приложение для настройки. Удержание плитки открывает GoreBox.
 - При первом запуске пользователь получает рекомендацию снять ограничения батареи. Приложение не меняет системные настройки без разрешения пользователя.
@@ -25,16 +25,18 @@ Android-клиент GoreBox с интерфейсом в палитре и ви
 - Hysteria и Hysteria 2;
 - TUIC;
 - WireGuard (ссылки и стандартные конфиги `.conf`);
+- AmneziaWG 1.x/2.x/3.x `.conf` с параметрами обфускации Jc/Jmin/Jmax, S1–S4, H1–H4, I1–I5 и дополнительными настройками AmneziaWG 3.x;
 - SSH (аутентификация по паролю);
 - полный sing-box JSON (если содержит валидный `outbounds`; при необходимости GoreBox добавляет TUN inbound).
 
-Импортёр может сохранить и другие форматы Windows-версии, но приложение **не запускает заведомо неподдерживаемые профили**: AnyTLS отсутствует в vendored sing-box `1.9.7-neko-1`, AmneziaWG требует расширения ядра, ShadowsocksR не реализован в ядре, а MTProto рассчитан на Telegram и не является общим TUN-протоколом. Для этих профилей при подключении показывается причина отказа.
+Импортёр может сохранить и другие форматы Windows-версии, но приложение **не запускает заведомо неподдерживаемые профили**: AnyTLS отсутствует в vendored sing-box `1.9.7-neko-1`, ShadowsocksR не реализован в ядре, а MTProto рассчитан на Telegram и не является общим TUN-протоколом. Для них при подключении показывается причина отказа.
 
 ## Собрать APK
 
-Нужны JDK 17, Go 1.23.x, Android SDK API 35 и Android NDK `26.2.11394342`. Сначала создайте локальный Android AAR ядра, затем соберите приложение:
+Нужны JDK 17, Android SDK API 35 и Android NDK `26.2.11394342`. Сборка AWG-runtime требует Go 1.25.x, а gomobile-ядро sing-box закреплено на Go 1.23.x. Сначала соберите нативную библиотеку AmneziaWG с Go 1.25.x, затем переключите `PATH` на Go 1.23.x для libbox и соберите приложение:
 
 ```bash
+./scripts/build-amneziawg-android.sh
 ./scripts/build-libbox-android.sh
 ./gradlew testDebugUnitTest assembleDebug
 ```
