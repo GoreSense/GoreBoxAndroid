@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -98,3 +98,18 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Keep the installable APK on the work branch
+        if: github.ref == 'refs/heads/arena/03ebb552-goreboxandroid'
+        run: |
+          mkdir -p deliverables
+          install -m 0644 app/build/outputs/apk/debug/app-debug.apk deliverables/GoreBox-debug.apk
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f deliverables/GoreBox-debug.apk
+          if git diff --cached --quiet; then
+            echo "The branch already contains this APK."
+          else
+            git commit -m "Add installable GoreBox debug APK"
+            git push origin HEAD:refs/heads/arena/03ebb552-goreboxandroid
+          fi

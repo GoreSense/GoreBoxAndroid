@@ -41,7 +41,7 @@ Android-клиент GoreBox с интерфейсом в палитре и ви
 
 Debug APK появится в `app/build/outputs/apk/debug/app-debug.apk`. Скрипт устанавливает `gomobile`/`gobind` из Go-модуля; Android SDK и NDK должны быть установлены и лицензии приняты. Полученный `app/libs/libbox.aar` игнорируется Git — в репозитории находятся исходники и воспроизводимая сборка, а не локальный бинарный артефакт.
 
-GitHub Actions workflow `.github/workflows/android.yml` собирает ядро, запускает unit-тесты и публикует APK как artifact `GoreBox-debug-apk` после push в рабочую ветку или ручного запуска workflow.
+GitHub Actions workflow `.github/workflows/android.yml` собирает ядро, запускает unit-тесты и публикует APK как artifact `GoreBox-debug-apk`. Для этой рабочей ветки workflow также помещает последний установочный файл в `deliverables/GoreBox-debug.apk` (debug-подпись), чтобы его можно было скачать прямо из ветки.
 
 ## Важные ограничения Android
 
