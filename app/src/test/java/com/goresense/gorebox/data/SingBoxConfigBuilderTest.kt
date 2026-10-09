@@ -74,7 +74,12 @@ class SingBoxConfigBuilderTest {
             Endpoint = wg.example:51820
             PersistentKeepalive = 25
         """.trimIndent()
-        val config = JSONObject(SingBoxConfigBuilder.build(profile("wireguard", configText)))
+        val configTextJson = try {
+            SingBoxConfigBuilder.build(profile("wireguard", configText))
+        } catch (error: Exception) {
+            throw AssertionError("WireGuard INI conversion failed: ${error.message}", error)
+        }
+        val config = JSONObject(configTextJson)
         val outbound = config.getJSONArray("outbounds").getJSONObject(0)
         val peer = outbound.getJSONArray("peers").getJSONObject(0)
 

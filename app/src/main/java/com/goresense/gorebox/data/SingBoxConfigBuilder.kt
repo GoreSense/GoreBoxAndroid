@@ -41,7 +41,7 @@ object SingBoxConfigBuilder {
             val outbound = JSONObject(json.toString()).put("type", type).put("tag", PROXY_TAG)
             return createServiceConfig(outbound, packageList, selectedAppsOnly).toString()
         }
-        require(!source.startsWith("[")) {
+        require(!source.startsWith("[") || source.contains("[Interface]", ignoreCase = true)) {
             "JSON-массив не является конфигурацией sing-box. Нужен объект с outbounds или профиль-ссылка."
         }
         val outbound = createOutbound(profile.protocol, source)

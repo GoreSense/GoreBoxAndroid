@@ -83,6 +83,8 @@ jobs:
           for path in log_paths:
               if path.exists():
                   chunks.append(f'--- {path} ---\n' + '\n'.join(path.read_text(errors='replace').splitlines()[-100:]))
+          for path in Path('app/build/test-results/testDebugUnitTest').glob('*.xml'):
+              chunks.append(f'--- {path} ---\n' + path.read_text(errors='replace')[-12000:])
           text = '\n'.join(chunks).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
           print(f'::error title=Gradle and daemon logs::{text}')
           PY
