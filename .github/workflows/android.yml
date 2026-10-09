@@ -101,7 +101,9 @@ jobs:
 
       - name: Keep the installable APK on the work branch
         if: github.ref == 'refs/heads/arena/03ebb552-goreboxandroid'
+        shell: bash
         run: |
+          set +e
           mkdir -p deliverables
           install -m 0644 app/build/outputs/apk/debug/app-debug.apk deliverables/GoreBox-debug.apk
           git config user.name "github-actions[bot]"
@@ -109,7 +111,24 @@ jobs:
           git add -f deliverables/GoreBox-debug.apk
           if git diff --cached --quiet; then
             echo "The branch already contains this APK."
-          else
-            git commit -m "Add installable GoreBox debug APK"
-            git push origin HEAD:refs/heads/arena/03ebb552-goreboxandroid
+            exit 0
+          fi
+          git commit -m "Add installable GoreBox debug APK" 2>&1 | tee /tmp/apk-commit.log
+          result=${PIPESTATUS[0]}
+          if [ "$result" -eq 0 ]; then
+            git push origin HEAD:refs/heads/arena/03ebb552-goreboxandroid 2>&1 | tee -a /tmp/apk-commit.log
+            result=${PIPESTATUS[0]}
+          fi
+          if [ "$result" -ne 0 ]; then
+            RESULT="$result" python3 - <<'PY'
+          from pathlib import Path
+          import os
+          text = f'APK branch push exit code: {os.environ["RESULT"]}\n'
+          path = Path('/tmp/apk-commit.log')
+          if path.exists():
+              text += path.read_text(errors='replace')[-12000:]
+          text = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print(f'::error title=APK branch publish log::{text}')
+          PY
+            exit "$result"
           fi
