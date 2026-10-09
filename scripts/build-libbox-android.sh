@@ -6,8 +6,8 @@ CORE_DIR="$ROOT_DIR/core/sing-box"
 APP_LIBS="$ROOT_DIR/app/libs"
 GO_BIN="$(go env GOPATH)/bin"
 
-if [[ "$(go version)" != *"go1.22"* ]]; then
-  echo "sing-box 1.9.x libbox is pinned to Go 1.22; install Go 1.22.x first." >&2
+if [[ "$(go version)" != *"go1.23"* ]]; then
+  echo "The pinned gomobile toolchain requires Go 1.23.x; install Go 1.23.x first." >&2
   exit 1
 fi
 if [[ -z "${ANDROID_HOME:-}" ]]; then
@@ -31,8 +31,8 @@ export PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
 
 cd "$CORE_DIR"
 
-go install github.com/sagernet/gomobile/cmd/gomobile@v0.1.4
-go install github.com/sagernet/gomobile/cmd/gobind@v0.1.4
+go install github.com/sagernet/gomobile/cmd/gomobile@v0.1.13
+go install github.com/sagernet/gomobile/cmd/gobind@v0.1.13
 gomobile init
 
 go run ./cmd/internal/build_libbox -target=android
